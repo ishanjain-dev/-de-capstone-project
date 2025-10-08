@@ -1,0 +1,82 @@
+version: 2
+
+sources:
+  - name: raw_data
+    schema: RAW_DATA
+    tables:
+      - name: posts
+        description: "Raw posts data from JSONPlaceholder API"
+      - name: comments
+        description: "Raw comments data from JSONPlaceholder API"
+
+models:
+  - name: stg_posts
+    description: "Cleaned and parsed posts data"
+    columns:
+      - name: post_id
+        description: "Primary key for posts"
+        tests:
+          - unique
+          - not_null
+      - name: user_id
+        description: "ID of the user who created the post"
+        tests:
+          - not_null
+      - name: title
+        description: "Title of the post"
+      - name: body
+        description: "Body content of the post"
+
+  - name: stg_comments
+    description: "Cleaned and parsed comments data"
+    columns:
+      - name: comment_id
+        description: "Primary key for comments"
+        tests:
+          - unique
+          - not_null
+      - name: post_id
+        description: "Foreign key to posts table"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_posts')
+              field: post_id
+      - name: name
+        description: "Name of the commenter"
+      - name: email
+        description: "Email of the commenter"
+      - name: body
+        description: "Body content of the comment"
+
+  - name: int_comments_per_post
+    description: "Intermediate model counting comments per post"
+    columns:
+      - name: post_id
+        description: "Foreign key to posts table"
+      - name: number_of_comments
+        description: "Count of comments for the post"
+
+  - name: dim_users
+    description: "User dimension table"
+    columns:
+      - name: user_id
+        description: "Primary key for users"
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_posts
+    description: "Fact table for posts with comment counts"
+    columns:
+      - name: post_id
+        description: "Primary key for posts"
+        tests:
+          - unique
+          - not_null
+      - name: user_id
+        description: "Foreign key to users table"
+      - name: title
+        description: "Title of the post"
+      - name: number_of_comments
+        description: "Number of comments on the post"
